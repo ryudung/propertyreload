@@ -12,14 +12,10 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
  * create Time : 2017-10-13
  */
 @Configuration
+@PropertySource(value = "classpath:/properties/common.properties")
 public class EnvironmentConfig {
-
-    @Configuration
-    @PropertySource(value = "classpath:/properties/common.properties")
-    public static class ProductionProperties {
-        @Bean
-        public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-            return new PropertySourcesPlaceholderConfigurer();
-        }
+    @Bean
+    public PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 }

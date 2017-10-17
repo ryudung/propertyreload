@@ -3,11 +3,13 @@ package com.example.propertyreload.config;
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.ConfigurationBuilderEvent;
 import org.apache.commons.configuration2.builder.ReloadingFileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.event.Event;
+import org.apache.commons.configuration2.event.EventListener;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.reloading.PeriodicReloadingTrigger;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -27,10 +29,17 @@ public class ReloadTest {
     private ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder;
 
     @PostConstruct
-    void init(){
+    void init() {
 
-         builder = new ReloadingFileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
+        builder = new ReloadingFileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
                 .configure(new Parameters().fileBased().setFile(new File("src/main/resources/properties/common.properties")));
+
+        builder.addEventListener(ConfigurationBuilderEvent.CONFIGURATION_REQUEST, new EventListener<Event>() {
+            @Override
+            public void onEvent(Event event) {
+                System.out.println(" getConfiguration()이 호출 될때마다 이벤트 발생");
+            }
+        });
 
         PeriodicReloadingTrigger configReloadingTrigger = new PeriodicReloadingTrigger(
                 builder.getReloadingController(), null, 1, TimeUnit.SECONDS);
@@ -42,9 +51,7 @@ public class ReloadTest {
 
     public Configuration getCompositeConfiguration() {
         try {
-            CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
-            compositeConfiguration.addConfiguration(builder.getConfiguration());
-            return compositeConfiguration;
+            return builder.getConfiguration();
         } catch (ConfigurationException e) {
             e.printStackTrace();
         }
